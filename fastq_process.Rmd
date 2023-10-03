@@ -1,0 +1,51 @@
+---
+title: "FASTQ File Processing"
+author: "Tianyi Xu"
+date: "2023-10-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# install if not installed
+install.packages("devtools")
+library("devtools")
+devtools::install_github("benjjneb/dada2", ref="v1.16") 
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load the required packages
+library("dada2")
+```
+
+## Process read data
+
+```{r}
+# path
+path = "data/"
+
+sample.dirs = list.dirs(path, full.names = FALSE, recursive = FALSE)
+```
+
+```{r}
+fnsF = vector("list", length(sample.dirs))
+fnsR = vector("list", length(sample.dirs))
+
+for (i in seq_along(sample.dirs)) {
+    sample.dir = sample.dirs[i]
+    fnsF[[i]] = list.files(file.path(path, sample.dir), pattern="_1.fastq", full.names=TRUE)
+    fnsR[[i]] = list.files(file.path(path, sample.dir), pattern="_2.fastq", full.names=TRUE)
+}
+
+fnsF = sort(unlist(fnsF))
+fnsR = sort(unlist(fnsR))
+
+# find sample names
+
+sample.names = vector("character", length(fnsF))
+
+for (i in seq_along(fnsF)) {
+    sample.names[i] = unlist(strsplit(unlist(strsplit(fnsF[i], "//"))[2], "/"))[1]
+}
+```

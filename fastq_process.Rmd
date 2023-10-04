@@ -49,3 +49,64 @@ for (i in seq_along(fnsF)) {
     sample.names[i] = unlist(strsplit(unlist(strsplit(fnsF[i], "//"))[2], "/"))[1]
 }
 ```
+
+# inspect the quality of the reads
+
+```{r}
+plotQualityProfile(fnsF[1:2])
+```
+
+```{r}
+plotQualityProfile(fnsR[1:2])
+```
+
+
+
+position 240 and 160 trim the reads.?
+
+## Filter and trim reads
+
+```{r}
+filtFs = file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs = file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+names(filtFs) = sample.names
+names(filtRs) = sample.names
+
+out = filterAndTrim(fnsF, filtFs, fnsR, filtRs, truncLen=c(240,160),
+                    maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
+                    compress=TRUE, multithread=FALSE)
+```
+
+```{r}
+head(out)
+```
+
+Calculate error
+
+```{r}
+errF = learnErrors(filtFs, multithread=FALSE)
+errR = learnErrors(filtRs, multithread=FALSE)
+```
+
+Curr output: > errF = learnErrors(filtFs, multithread=FALSE)
+132468480 total bases in 551952 reads from 5 samples will be used for learning the error rates.
+> errR = learnErrors(filtRs, multithread=FALSE)
+102837120 total bases in 642732 reads from 6 samples will be used for learning the error rates.
+
+```{r}
+plotErrors(errF, nominalQ=TRUE)
+```
+
+## Sample Inference
+
+```{r}
+dadaFs <- dada(filtFs, err=errF, multithread=FALSE)
+```
+
+```{r}
+# save runtimes
+save(dadaFs, file="dadaFs.rda")
+save(errF, file="errF.rda")
+save(errR, file="errR.rda")
+save(out, file="out.rda")
+```
